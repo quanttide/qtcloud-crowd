@@ -1,0 +1,98 @@
+.app {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 64px 24px;
+}
+
+.hero {
+  text-align: center;
+  padding: 64px 32px 72px;
+  border-radius: 16px;
+  background: linear-gradient(160deg, #eef2ff 0%, #e0e7ff 45%, #f8fafc 100%);
+}
+
+.hero h1 {
+  font-size: 42px;
+  font-weight: 700;
+  color: #1e3a8a;
+}
+
+.tagline {
+  margin-top: 16px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e40af;
+}
+
+.positioning {
+  max-width: 520px;
+  margin: 16px auto 0;
+  font-size: 16px;
+  color: #64748b;
+}
+
+.cta {
+  display: inline-block;
+  margin-top: 28px;
+  padding: 12px 28px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  background: #1e40af;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.cta:hover {
+  background: #1e3a8a;
+  transform: translateY(-1px);
+}
+
+section {
+  margin: 64px 0;
+}
+
+h2 {
+  font-size: 24px;
+  color: #1e3a8a;
+  margin-bottom: 16px;
+}
+
+.features-lead {
+  font-size: 16px;
+  color: #64748b;
+  margin-bottom: 24px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.card h3 {
+  font-size: 18px;
+  color: #1e3a8a;
+  margin-bottom: 8px;
+}
+
+.card p {
+  font-size: 15px;
+  color: #64748b;
+}
+
+footer {
+  text-align: center;
+  color: #94a3b8;
+  padding-top: 32px;
+  border-top: 1px solid #e2e8f0;
+}
