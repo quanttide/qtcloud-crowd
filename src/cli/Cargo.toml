@@ -1,0 +1,20 @@
+[package]
+name = "qtcloud-crowd-cli"
+version = "0.1.0"
+edition = "2024"
+description = "量潮众包管理云 CLI——管理方工具（任务审核/执行方认证/结算记录）"
+authors = ["QuantTide <opensource@quanttide.com>"]
+license = "Apache-2.0"
+repository = "https://github.com/quanttide/qtcloud-crowd"
+readme = "README.md"
+keywords = ["qtcloud", "quanttide", "crowd", "cli"]
+categories = ["command-line-utilities"]
+
+[[bin]]
+name = "qtcloud-crowd"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
