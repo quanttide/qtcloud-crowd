@@ -8,8 +8,8 @@
 
 | 视角 | 文档 | 核心动作 |
 |------|------|---------|
-| 人 | [execution-partner-management.md](execution-partner-management.md) | 管理执行方（认证） |
+| 人 | [partners.md](execution-partner-management.md) | 管理执行方（认证） |
 | 财 | [settlement.md](settlement.md) | 结算（记录） |
-| 事 | [task-review.md](task-review.md) | 审核任务（发布/验收） |
+| 事 | [review.md](task-review.md) | 审核任务（发布/验收） |
 
 详见各视角文档（想象中的样子 + 最精简的样子）。
