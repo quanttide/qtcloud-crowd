@@ -1,5 +1,14 @@
 # 量潮众包云（`qtcloud-crowd`）
 
+量潮众包管理云——自营发销售众包，面向外部渠道与代理，按量潮标准结算。
+
+## 入口
+
+| 服务 | 地址 |
+|------|------|
+| API | `https://api.quanttide.com/qtcloud-crowd/` |
+| site | `https://crowd.cloud.quanttide.com/` |
+
 ## 组成
 
 本项目包含四个独立组件，各自独立发布：

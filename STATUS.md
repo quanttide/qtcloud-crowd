@@ -2,6 +2,13 @@
 
 > 最后更新：2026-08-26
 
+## 入口
+
+| 服务 | 地址 |
+|------|------|
+| API 网关 | `https://api.quanttide.com/qtcloud-crowd/` |
+| site | `https://crowd.cloud.quanttide.com/` |
+
 ## 发布状态
 
 | 组件 | 最新版本 | 发布日期 | Git Tag | 部署状态 |
