@@ -1,0 +1,14 @@
+# 复制为 terraform.tfvars 并按需修改
+region           = "cn-hangzhou"
+
+# site（React+Vite 介绍页）桶与 CDN
+site_bucket_name = "qtcloud-crowd-site"
+site_cdn_domain  = "crowd.cloud.quanttide.com"
+
+# provider（FC）
+environment        = "prod"
+oss_data_bucket   = "qtcloud-crowd-provider" # 私有：后台完整数据
+oss_public_bucket = "qtcloud-crowd-public"   # 公共读 + 静态托管：黄页快照
+oss_endpoint      = "oss-cn-hangzhou.aliyuncs.com"
+image             = "<ACR实例公网地址>/quanttide/qtcloud-crowd-provider:latest" # 敏感，勿入库；CI 用 TF_VAR_image 注入
+# oss_access_key_id / oss_access_key_secret：provider 运行时访问 OSS 的 AK/SK，敏感，勿入库；CI 用 TF_VAR_* 注入

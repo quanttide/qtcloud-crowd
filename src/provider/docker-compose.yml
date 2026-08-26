@@ -1,0 +1,21 @@
+# 本地开发环境：一键构建并启动 provider（对齐 qtcloud-execute provider 模板）
+# 用法：docker compose up -d --build   （停止：docker compose down）
+# 数据：默认本地文件存储，挂载 ./data 目录（种子 data/crowd.json 已内置 src/provider/data/，
+#       本地读写直接落盘）；生产环境运行时切换 OSS store（QTCLOUD_CROWD_STORE=oss），
+#       见 manifests/terraform/fc.tf
+# 覆盖：QTCLOUD_CROWD_STORE=oss 并注入 QTCLOUD_OSS_* / QTCLOUD_OSS_ACCESS_KEY_ID/SECRET
+#       即可联调云端数据源（私有后台桶 + 公开桶双桶，见 internal/store/oss.go）
+services:
+  provider:
+    build: .
+    image: qtcloud-crowd-provider:local
+    container_name: qtcloud-crowd-provider
+    ports:
+      - "8080:8080"
+    environment:
+      QTCLOUD_CROWD_STORE: local
+      QTCLOUD_CROWD_DATA: /data/crowd.json
+      QTCLOUD_CROWD_ADDR: ":8080"
+    volumes:
+      - ./data:/data
+    restart: unless-stopped

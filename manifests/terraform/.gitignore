@@ -1,0 +1,6 @@
+# 本地 state 不入库（远程 state 在 OSS quanttide-terraform-state）
+*.tfstate
+*.tfstate.*
+.terraform/
+terraform.tfvars
+# 注：.terraform.lock.hcl 入库（对齐 qtcloud-execute 模板，保证 provider 版本可复现）
