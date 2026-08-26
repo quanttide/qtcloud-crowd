@@ -40,3 +40,24 @@ output "oss_public_bucket" {
   description = "provider 运行时公开黄页 OSS 桶名（公共读 + 静态托管）"
   value       = alicloud_oss_bucket.public.bucket
 }
+
+# ============================================================
+# API 网关输出
+# ============================================================
+output "apigateway_domain" {
+  description = "API 网关子域名（需在 DNS 中配置 CNAME）"
+  value       = "34c138c4bec1405d942a57d9bb5ede37-cn-hangzhou.alicloudapi.com"
+}
+
+output "apigateway_apis" {
+  description = "API 网关 API 列表"
+  value = {
+    tasks        = "/qtcloud-crowd/api/tasks"
+    task_detail  = "/qtcloud-crowd/api/tasks/{id}"
+    task_claim   = "/qtcloud-crowd/api/tasks/{id}/claim"
+    task_deliver = "/qtcloud-crowd/api/tasks/{id}/deliver"
+    partners     = "/qtcloud-crowd/api/partners"
+    partner_certify = "/qtcloud-crowd/api/partners/{id}/certify"
+    settlements  = "/qtcloud-crowd/api/settlements"
+  }
+}

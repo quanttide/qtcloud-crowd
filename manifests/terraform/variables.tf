@@ -80,3 +80,12 @@ variable "fc_timeout" {
   type        = number
   default     = 60
 }
+
+# ============================================================
+# API 网关相关变量
+# ============================================================
+variable "apigateway_instance_id" {
+  description = "API 网关实例 ID"
+  type        = string
+  default     = "api-shared-vpc-001"
+}
