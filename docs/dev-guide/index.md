@@ -8,37 +8,40 @@
 众包管理云 = **管理方后台**（不是交易平台）：审核任务、管理执行方、结算记录。
 站点（qtcrowd）只做信息展示——本应用是管理工具。
 
-## 架构：OSS 共享数据层（两端一数据层）
+## 架构：前台自有对象存储（后台只投递）
 
 ```
-qtcloud-crowd studio → 后台 provider（私有桶：审核/认证/结算）
-                          │ 审核通过 = 发布（OSS CopyObject → 公开桶）
+qtcloud-crowd studio → 后台 provider（私有桶：审核/认证/结算——唯一数据源）
+                          │ 审核通过 = 发布（OSS 提交 → 前台 qtcrowd 桶）
                           ▼
-                      公开桶（公共读 + CDN：任务池）
-                          ▲ 认领/交付（写回 API——前台依赖后台）
+                      qtcrowd 桶（前台 provider 的对象存储——前台自有、前台管理）
+                          ▲ site/studio 读自己的桶（CDN——前台基础设施）
+                          │ 认领/交付（写回 API——经 qtcrowd provider 转发后台）
                           │
-qtcrowd provider（轻量：只做写操作转发）→ qtcrowd site/studio（公开）
+qtcrowd provider（前台服务端：自有存储 + 写操作转发）→ qtcrowd site/studio（公开）
 ```
 
 ### 依赖方向（硬约束）
 
 - **前台可以依赖后台，反之不行**
-- 后台（qtcloud-crowd provider）只依赖 OSS——不知道前台存在
-- 前台（qtcrowd）依赖：OSS（读公开桶）+ 后台 API（认领/交付写回）
+- 后台（qtcloud-crowd provider）只有**私有数据桶**——不建任何公开桶（公开层不在后台图纸中）
+- 前台（qtcrowd）拥有自己的对象存储（qtcrowd 桶）——读自己的桶（CDN）完全自治
+- 后台发布 = **提交数据到前台存储**（OSS 写入 qtcrowd 桶——投递者角色，非服务依赖）
+- 前台依赖后台仅一处：认领/交付写回 API（经 qtcrowd provider 转发）
 
 ### 桶设计
 
-| 桶 | 权限 | 内容 | 消费者 |
-|----|------|------|--------|
-| 后台桶（私有） | 仅后台 | 完整数据（审核/认证/结算） | 后台 provider |
-| 公开桶（公共读+CDN） | 公共读 | 黄页快照（可接任务：title/reward/报名引导） | qtcrowd site/studio 直接读 |
+| 桶 | 归属 | 权限 | 内容 |
+|----|------|------|------|
+| 后台数据桶（私有） | qtcloud-crowd | 仅后台 | 完整数据（审核/认证/结算） |
+| **qtcrowd 桶（公开）** | **qtcrowd（前台自有）** | 公共读+CDN | 黄页快照（可接任务）——前台管理 |
 
 ### 数据流
 
-- **发布**：后台审核通过 → 写公开桶对象（CopyObject）——"推"的动作在后台（带审计）
-- **展示**：site/studio 直接读公开桶（CDN 静态分发）——无需读 API
-- **认领/交付**：写操作 → qtcrowd provider → 调后台 API（前台依赖后台）
-- **撤回**：后台删除公开桶对象（任务关闭/被认领）
+- **发布**：后台审核通过 → OSS 提交黄页快照到 qtcrowd 桶（写权限授权）——投递动作在后台、存储在前台
+- **展示**：site/studio 读自己的桶（CDN）——前台自治
+- **认领/交付**：写操作 → qtcrowd provider → 转发后台 API（前台依赖后台）
+- **撤回**：前台 provider 删除对象（或后台提交删除指令）
 
 ### 公开桶语义
 
