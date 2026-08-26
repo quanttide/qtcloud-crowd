@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### 新增
+
+- `GET /api/tasks` 支持 `?status=` 过滤（如 `?status=published`）——前台 qtcrowd-provider 上架拉取契约：
+  只返回指定状态任务；不带 status 返回全部；非法 status 返回 400
+
 ## [0.1.0-alpha.2] - 2026-08-26
 
 ### 修复

@@ -12,6 +12,8 @@ import (
 )
 
 // mockOSSServer 模拟阿里云 OSS：校验签名头并保存对象（后台桶 bucket / 公开桶 public-bucket）。
+// 404 返回 OSS 规范错误 XML（<Error><Code>NoSuchKey</Code>…），SDK 才能解析为
+// oss.ServiceError（StatusCode=404）→ 存储层映射 ErrNotFound。
 func mockOSSServer(t *testing.T) (*httptest.Server, *sync.Map, *sync.Map) {
 	t.Helper()
 	private := &sync.Map{}
@@ -31,14 +33,14 @@ func mockOSSServer(t *testing.T) (*httptest.Server, *sync.Map, *sync.Map) {
 		case strings.HasPrefix(r.URL.Path, "/public-bucket/"):
 			objects, key = public, strings.TrimPrefix(r.URL.Path, "/public-bucket/")
 		default:
-			http.Error(w, "unknown bucket", http.StatusNotFound)
+			writeOSSError(w, http.StatusNotFound, "NoSuchBucket")
 			return
 		}
 		switch r.Method {
 		case http.MethodGet:
 			v, ok := objects.Load(key)
 			if !ok {
-				http.Error(w, "not found", http.StatusNotFound)
+				writeOSSError(w, http.StatusNotFound, "NoSuchKey")
 				return
 			}
 			_, _ = w.Write(v.([]byte))
@@ -61,9 +63,22 @@ func mockOSSServer(t *testing.T) (*httptest.Server, *sync.Map, *sync.Map) {
 	return srv, private, public
 }
 
+// writeOSSError 写 OSS 规范错误响应（XML + 状态码），SDK 可解析为 oss.ServiceError。
+func writeOSSError(w http.ResponseWriter, status int, code string) {
+	w.Header().Set("Content-Type", "application/xml")
+	w.WriteHeader(status)
+	_, _ = io.WriteString(w, `<?xml version="1.0" encoding="UTF-8"?>
+<Error>
+  <Code>`+code+`</Code>
+  <Message>mock oss error</Message>
+  <RequestId>mock-request</RequestId>
+  <HostId>mock</HostId>
+</Error>`)
+}
+
 func TestOSSPutGetRoundTrip(t *testing.T) {
 	srv, objects, _ := mockOSSServer(t)
-	st := NewOSS(OSSConfig{
+	st, _ := NewOSS(OSSConfig{
 		Endpoint:        srv.URL,
 		Bucket:          "bucket",
 		AccessKeyID:     "AKID",
@@ -90,7 +105,7 @@ func TestOSSPutGetRoundTrip(t *testing.T) {
 
 func TestOSSGetNotFound(t *testing.T) {
 	srv, _, _ := mockOSSServer(t)
-	st := NewOSS(OSSConfig{
+	st, _ := NewOSS(OSSConfig{
 		Endpoint:        srv.URL,
 		Bucket:          "bucket",
 		AccessKeyID:     "AKID",
@@ -105,7 +120,7 @@ func TestOSSGetNotFound(t *testing.T) {
 func TestOSSPutWithContentType(t *testing.T) {
 	// PUT 带 Content-Type: application/json，请求带签名可被 mock server 接受。
 	srv, _, _ := mockOSSServer(t)
-	st := NewOSS(OSSConfig{
+	st, _ := NewOSS(OSSConfig{
 		Endpoint:        srv.URL,
 		Bucket:          "bucket",
 		AccessKeyID:     "AKID",
@@ -118,7 +133,7 @@ func TestOSSPutWithContentType(t *testing.T) {
 
 func TestOSSPutPublicWritesPublicBucket(t *testing.T) {
 	srv, private, public := mockOSSServer(t)
-	st := NewOSS(OSSConfig{
+	st, _ := NewOSS(OSSConfig{
 		Endpoint:        srv.URL,
 		Bucket:          "bucket",
 		PublicBucket:    "public-bucket",
@@ -155,7 +170,7 @@ func TestOSSPutPublicWritesPublicBucket(t *testing.T) {
 
 func TestOSSPublicBucketNotConfigured(t *testing.T) {
 	srv, _, _ := mockOSSServer(t)
-	st := NewOSS(OSSConfig{
+	st, _ := NewOSS(OSSConfig{
 		Endpoint:        srv.URL,
 		Bucket:          "bucket",
 		AccessKeyID:     "AKID",

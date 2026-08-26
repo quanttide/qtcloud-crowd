@@ -40,14 +40,41 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// list 返回任务列表；支持 ?status= 过滤（如 ?status=published——前台 qtcrowd-provider
+// 上架时拉取可上架任务）。status 为空返回全部；非法 status 返回 400。
 func (h *Handler) list(w http.ResponseWriter, r *http.Request) {
+	status := Status(r.URL.Query().Get("status"))
+	if status != "" && !isValidStatus(status) {
+		http.Error(w, "invalid status: "+string(status), http.StatusBadRequest)
+		return
+	}
+
 	tasks, err := h.repo.List(r.Context())
 	if err != nil {
 		log.Printf("task list: %v", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
+	if status != "" {
+		filtered := make([]Task, 0, len(tasks))
+		for _, t := range tasks {
+			if t.Status == status {
+				filtered = append(filtered, t)
+			}
+		}
+		tasks = filtered
+	}
 	writeJSON(w, http.StatusOK, tasks)
+}
+
+// isValidStatus 判断是否为已知任务状态（pending/reviewing/published/accepted/done）。
+func isValidStatus(s Status) bool {
+	switch s {
+	case StatusPending, StatusReviewing, StatusPublished, StatusAccepted, StatusDone:
+		return true
+	default:
+		return false
+	}
 }
 
 func (h *Handler) upsert(w http.ResponseWriter, r *http.Request) {

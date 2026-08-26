@@ -13,7 +13,7 @@
 
 本项目包含四个独立组件，各自独立发布：
 
-- **provider**（Go）— 服务端，提供任务/执行方/结算 REST API，支持本地存储和 OSS 共享数据层
+- **provider**（Go）— 服务端，提供任务/执行方/结算 REST API，支持本地存储和 OSS 共享数据层（后台私有数据桶；`GET /api/tasks?status=published` 供前台 qtcrowd-provider 拉取上架——不建公开桶）
 - **site**（React + Vite）— 产品介绍页，展示核心功能
 - **studio**（Flutter）— 管理前端，支持任务审核、执行方管理、结算记录
 - **cli**（Rust）— 管理方命令行工具，功能与 studio 对齐

@@ -55,6 +55,36 @@ func TestTaskListEmpty(t *testing.T) {
 	}
 }
 
+// TestTaskListStatusFilter status 过滤：?status=published 只返回 published 任务；
+// 不带 status 返回全部；非法 status 返回 400（前台 qtcrowd-provider 上架契约）。
+func TestTaskListStatusFilter(t *testing.T) {
+	h, _ := newTestHandler(t)
+	putOK(t, h, `{"id":"t1","title":"A","content":"","acceptance_criteria":"达标","reward":"100 元","apply_guide":"发邮件报名","status":"published"}`)
+	putOK(t, h, `{"id":"t2","title":"B","content":"","acceptance_criteria":"达标","status":"reviewing"}`)
+	putOK(t, h, `{"id":"t3","title":"C","content":"","acceptance_criteria":"达标","status":"accepted"}`)
+
+	// ?status=published：只返回 published（上架契约：可上架任务）。
+	rec := doJSON(t, h, http.MethodGet, "/api/tasks?status=published", "")
+	if rec.Code != http.StatusOK {
+		t.Fatalf("want 200, got %d", rec.Code)
+	}
+	got := decodeList[Task](t, rec)
+	if len(got) != 1 || got[0].ID != "t1" || got[0].Status != StatusPublished {
+		t.Fatalf("status=published want 仅 t1(published), got %+v", got)
+	}
+
+	// 不带 status：返回全部（3 条）。
+	all := decodeList[Task](t, doJSON(t, h, http.MethodGet, "/api/tasks", ""))
+	if len(all) != 3 {
+		t.Fatalf("不带 status want 全部 3 条, got %d", len(all))
+	}
+
+	// 非法 status → 400。
+	if rec := doJSON(t, h, http.MethodGet, "/api/tasks?status=bogus", ""); rec.Code != http.StatusBadRequest {
+		t.Fatalf("非法 status want 400, got %d", rec.Code)
+	}
+}
+
 func TestTaskUpsertAndOverwrite(t *testing.T) {
 	h, _ := newTestHandler(t)
 
