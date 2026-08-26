@@ -35,6 +35,24 @@ func (r *Repository) List(ctx context.Context) ([]Task, error) {
 	return tasks, nil
 }
 
+// Get 按 id 读取任务；不存在时返回 store.ErrNotFound。
+func (r *Repository) Get(ctx context.Context, id string) (Task, error) {
+	ds, err := store.Load(ctx, r.st, r.key)
+	if err != nil {
+		return Task{}, err
+	}
+	for _, raw := range ds.Tasks {
+		var t Task
+		if err := json.Unmarshal(raw, &t); err != nil {
+			return Task{}, err
+		}
+		if t.ID == id {
+			return t, nil
+		}
+	}
+	return Task{}, store.ErrNotFound
+}
+
 // Upsert 保存任务：同 id 覆盖，否则追加。
 func (r *Repository) Upsert(ctx context.Context, t Task) error {
 	ds, err := store.Load(ctx, r.st, r.key)

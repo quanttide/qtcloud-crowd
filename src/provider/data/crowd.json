@@ -13,6 +13,15 @@
       "content": "校对 2 万字市场宣传材料英文翻译",
       "acceptance_criteria": "无错别字、术语与官方 Glossary 一致",
       "status": "done"
+    },
+    {
+      "id": "t3",
+      "title": "渠道推广任务",
+      "content": "按量潮标准完成渠道推广，覆盖目标渠道并回传推广数据",
+      "acceptance_criteria": "推广数据完整、渠道覆盖达标，按量潮标准验收",
+      "reward": "按量潮标准结算",
+      "apply_guide": "联系量潮运营报名，提交渠道资源清单",
+      "status": "published"
     }
   ],
   "partners": [

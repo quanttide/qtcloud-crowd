@@ -32,10 +32,10 @@ func TestSmoke(t *testing.T) {
 	srv := httptest.NewServer(newMux(store.NewLocal(), key))
 	t.Cleanup(srv.Close)
 
-	// 1) 种子数据可读：2 任务 / 1 执行方 / 1 结算
+	// 1) 种子数据可读：3 任务 / 1 执行方 / 1 结算
 	tasks := getList[task.Task](t, srv.URL+"/api/tasks")
-	if len(tasks) != 2 {
-		t.Fatalf("种子任务 want 2, got %d", len(tasks))
+	if len(tasks) != 3 {
+		t.Fatalf("种子任务 want 3, got %d", len(tasks))
 	}
 	partners := getList[partner.Partner](t, srv.URL+"/api/partners")
 	if len(partners) != 1 {
@@ -45,15 +45,19 @@ func TestSmoke(t *testing.T) {
 	if len(settlements) != 1 || settlements[0].Amount != 888.5 {
 		t.Fatalf("种子结算 want 1 笔 888.5, got %+v", settlements)
 	}
+	// 种子含 published 任务（渠道推广任务）：公开层语义的样例数据。
+	if tasks[2].Status != task.StatusPublished || tasks[2].Reward != "按量潮标准结算" {
+		t.Fatalf("种子 t3 应为 published 渠道推广任务, got %+v", tasks[2])
+	}
 
 	// 2) 各写一条：审核发布新任务 / 认证新执行方 / 记一笔结算
-	putJSON(t, srv.URL+"/api/tasks", `{"id":"t3","title":"整理会议纪要","content":"输出行动项","acceptance_criteria":"行动项含负责人与截止日","status":"reviewing"}`)
+	putJSON(t, srv.URL+"/api/tasks", `{"id":"t4","title":"整理会议纪要","content":"输出行动项","acceptance_criteria":"行动项含负责人与截止日","status":"reviewing"}`)
 	putJSON(t, srv.URL+"/api/partners", `{"id":"p2","name":"李四","type":"training","certified":true}`)
 	postJSON(t, srv.URL+"/api/settlements", `{"id":"s2","task_id":"t1","partner_id":"p2","amount":200,"settled_at":"2026-08-25T12:00:00+08:00"}`)
 
 	// 3) 再次读取验证写入生效
-	if got := getList[task.Task](t, srv.URL+"/api/tasks"); len(got) != 3 {
-		t.Fatalf("写入后任务 want 3, got %d", len(got))
+	if got := getList[task.Task](t, srv.URL+"/api/tasks"); len(got) != 4 {
+		t.Fatalf("写入后任务 want 4, got %d", len(got))
 	}
 	if got := getList[partner.Partner](t, srv.URL+"/api/partners"); len(got) != 2 {
 		t.Fatalf("写入后执行方 want 2, got %d", len(got))
@@ -71,7 +75,7 @@ func TestSmoke(t *testing.T) {
 	if err := json.Unmarshal(raw, &ds); err != nil {
 		t.Fatalf("落盘 JSON 解析: %v", err)
 	}
-	if len(ds.Tasks) != 3 || len(ds.Partners) != 2 || len(ds.Settlements) != 2 {
+	if len(ds.Tasks) != 4 || len(ds.Partners) != 2 || len(ds.Settlements) != 2 {
 		t.Fatalf("落盘内容不一致: tasks=%d partners=%d settlements=%d", len(ds.Tasks), len(ds.Partners), len(ds.Settlements))
 	}
 	if _, err := os.Stat(key + ".tmp"); !os.IsNotExist(err) {

@@ -5,7 +5,8 @@
 //   - QTCLOUD_CROWD_DATA   数据文件路径（OSS 下为对象名），默认 data/crowd.json
 //   - QTCLOUD_CROWD_STORE  存储后端，默认 local；设为 oss 走阿里云 OSS
 //   - QTCLOUD_OSS_ENDPOINT / QTCLOUD_OSS_BUCKET /
-//     QTCLOUD_OSS_ACCESS_KEY_ID / QTCLOUD_OSS_ACCESS_KEY_SECRET  OSS 配置
+//     QTCLOUD_OSS_PUBLIC_BUCKET / QTCLOUD_OSS_ACCESS_KEY_ID /
+//     QTCLOUD_OSS_ACCESS_KEY_SECRET  OSS 配置（PUBLIC_BUCKET=公开桶：黄页快照）
 package main
 
 import (
@@ -14,6 +15,7 @@ import (
 	"os"
 
 	"github.com/quanttide/qtcloud-crowd-provider/internal/partner"
+	"github.com/quanttide/qtcloud-crowd-provider/internal/publish"
 	"github.com/quanttide/qtcloud-crowd-provider/internal/settlement"
 	"github.com/quanttide/qtcloud-crowd-provider/internal/store"
 	"github.com/quanttide/qtcloud-crowd-provider/internal/task"
@@ -38,6 +40,7 @@ func newStore(storeType string) store.Store {
 		return store.NewOSS(store.OSSConfig{
 			Endpoint:        getenv("QTCLOUD_OSS_ENDPOINT", ""),
 			Bucket:          getenv("QTCLOUD_OSS_BUCKET", ""),
+			PublicBucket:    getenv("QTCLOUD_OSS_PUBLIC_BUCKET", ""),
 			AccessKeyID:     getenv("QTCLOUD_OSS_ACCESS_KEY_ID", ""),
 			AccessKeySecret: getenv("QTCLOUD_OSS_ACCESS_KEY_SECRET", ""),
 		})
@@ -46,9 +49,12 @@ func newStore(storeType string) store.Store {
 }
 
 // newMux 组装路由：人（执行方）/财（结算）/事（任务）三组 REST API。
+// 任务注册在 /api/tasks 与 /api/tasks/（写回 API 走子路径 /claim、/deliver）。
 func newMux(st store.Store, dataKey string) http.Handler {
 	mux := http.NewServeMux()
-	mux.Handle("/api/tasks", task.NewHandler(task.NewRepository(st, dataKey)))
+	tasks := task.NewHandler(task.NewRepository(st, dataKey), publish.NewPublisher(st))
+	mux.Handle("/api/tasks", tasks)
+	mux.Handle("/api/tasks/", tasks)
 	mux.Handle("/api/partners", partner.NewHandler(partner.NewRepository(st, dataKey)))
 	mux.Handle("/api/settlements", settlement.NewHandler(settlement.NewRepository(st, dataKey)))
 	return mux
