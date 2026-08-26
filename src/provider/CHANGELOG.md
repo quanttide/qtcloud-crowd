@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### 移除
+
+- 删除发布投递层 `internal/publish/`（审核通过不再写前台公开桶）——新架构下前台只从
+  qtcrowd-provider 数据 API 读（`GET /api/tasks?status=published` 上架拉取），后台不建/不投递公开桶；
+  published 状态机保留
+- store 接口移除 `PutPublic/DeletePublic`（local/OSS 实现及测试同步清理）
+- 环境变量 `QTCLOUD_OSS_PUBLIC_BUCKET` 移除（main.go / terraform fc.tf / README 同步）
+
 ### 新增
 
 - `GET /api/tasks` 支持 `?status=` 过滤（如 `?status=published`）——前台 qtcrowd-provider 上架拉取契约：

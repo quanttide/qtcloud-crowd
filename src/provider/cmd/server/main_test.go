@@ -45,7 +45,7 @@ func TestSmoke(t *testing.T) {
 	if len(settlements) != 1 || settlements[0].Amount != 888.5 {
 		t.Fatalf("种子结算 want 1 笔 888.5, got %+v", settlements)
 	}
-	// 种子含 published 任务（渠道推广任务）：公开层语义的样例数据。
+	// 种子含 published 任务（渠道推广任务）：上架查询（GET /api/tasks?status=published）的样例数据。
 	if tasks[2].Status != task.StatusPublished || tasks[2].Reward != "按量潮标准结算" {
 		t.Fatalf("种子 t3 应为 published 渠道推广任务, got %+v", tasks[2])
 	}

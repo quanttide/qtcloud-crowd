@@ -6,21 +6,19 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/quanttide/qtcloud-crowd-provider/internal/publish"
 	"github.com/quanttide/qtcloud-crowd-provider/internal/store"
 )
 
-// newTestHandler 用本地文件存储 + 临时文件构建任务 handler（公开层落在 {dir}/data/public/）。
+// newTestHandler 用本地文件存储 + 临时文件构建任务 handler。
 func newTestHandler(t *testing.T) (http.Handler, string) {
 	t.Helper()
 	dir := t.TempDir()
 	key := filepath.Join(dir, "data", "crowd.json")
-	st := store.NewLocalPublicDir(filepath.Join(dir, "data", "public"))
-	return NewHandler(NewRepository(st, key), publish.NewPublisher(st)), key
+	st := store.NewLocal()
+	return NewHandler(NewRepository(st, key)), key
 }
 
 func doJSON(t *testing.T, h http.Handler, method, path, body string) *httptest.ResponseRecorder {
@@ -192,45 +190,6 @@ func TestTaskStateMachineFlow(t *testing.T) {
 	list := decodeList[Task](t, doJSON(t, h, http.MethodGet, "/api/tasks", ""))
 	if len(list) != 1 || list[0].Status != StatusDone {
 		t.Fatalf("最终状态 want done, got %+v", list)
-	}
-}
-
-// TestTaskPublishWritesPublicLayer 发布写公开层（local 模式）：
-// 审核通过（status=published）生成 data/public/tasks/{id}.json；认领后删除。
-func TestTaskPublishWritesPublicLayer(t *testing.T) {
-	h, key := newTestHandler(t)
-	// key = {dir}/data/crowd.json → 公开对象 = {dir}/data/public/tasks/t3.json
-	publicObj := filepath.Join(filepath.Dir(key), "public", "tasks", "t3.json")
-
-	body := `{"id":"t3","title":"渠道推广任务","content":"按量潮标准推广","acceptance_criteria":"推广数据完整","reward":"按量潮标准结算","apply_guide":"联系量潮运营报名","status":"published"}`
-	if rec := doJSON(t, h, http.MethodPut, "/api/tasks", body); rec.Code != http.StatusOK {
-		t.Fatalf("发布 want 200, got %d: %s", rec.Code, rec.Body.String())
-	}
-
-	// 生成：public/ 目录下出现 tasks/t3.json，内容是黄页快照（不含验收准则等内部数据）。
-	data, err := os.ReadFile(publicObj)
-	if err != nil {
-		t.Fatalf("公开对象未生成: %v", err)
-	}
-	var snap struct {
-		Title      string `json:"title"`
-		Reward     string `json:"reward"`
-		ApplyGuide string `json:"apply_guide"`
-		Status     string `json:"status"`
-	}
-	if err := json.Unmarshal(data, &snap); err != nil {
-		t.Fatalf("解析公开对象: %v", err)
-	}
-	if snap.Title != "渠道推广任务" || snap.Reward != "按量潮标准结算" || snap.ApplyGuide != "联系量潮运营报名" || snap.Status != "published" {
-		t.Fatalf("黄页快照内容不符: %+v", snap)
-	}
-
-	// 认领 → 删除公开对象（任务不再可接）。
-	if rec := doJSON(t, h, http.MethodPost, "/api/tasks/t3/claim", `{"partner_id":"p1"}`); rec.Code != http.StatusOK {
-		t.Fatalf("认领 want 200, got %d: %s", rec.Code, rec.Body.String())
-	}
-	if _, err := os.Stat(publicObj); !os.IsNotExist(err) {
-		t.Fatalf("认领后公开对象应删除, got %v", err)
 	}
 }
 

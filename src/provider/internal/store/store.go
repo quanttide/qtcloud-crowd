@@ -12,19 +12,13 @@ import (
 // ErrNotFound 表示 key 对应的数据不存在。
 var ErrNotFound = errors.New("store: key not found")
 
-// Store 是对象存储抽象（后台桶 + 前台桶两层）。
+// Store 是对象存储抽象：以 key（逻辑路径/对象名）读写 JSON 数据。
 //
-// OSS 共享数据层把存储一分为二：后台桶（私有，完整数据）与前台桶（qtcrowd-site——
-// 前台自有、公共读 + CDN，黄页快照——当前可接任务；后台只投递不建桶）。
-// 后台桶用 Get/Put，前台桶用 PutPublic/DeletePublic。
-// 前台对象 key 遵循路径前缀约定 public/tasks/{id}.json。
+// OSS 共享数据层为单桶（私有，完整数据：审核/认证/结算）——后台不建公开桶，
+// 公开层（黄页快照）由前台 qtcrowd-provider 自有桶承载、前台自行写。
 type Store interface {
-	// Get 读取后台桶 key 对应的数据；不存在时返回 ErrNotFound。
+	// Get 读取 key 对应的数据；不存在时返回 ErrNotFound。
 	Get(ctx context.Context, key string) ([]byte, error)
-	// Put 写入后台桶 key 对应的数据（原子写，不存在则创建）。
+	// Put 写入 key 对应的数据（原子写，不存在则创建）。
 	Put(ctx context.Context, key string, data []byte) error
-	// PutPublic 写入前台桶对象（黄页快照，覆盖语义）。
-	PutPublic(ctx context.Context, key string, data []byte) error
-	// DeletePublic 删除前台桶对象；对象不存在视为已删除（幂等）。
-	DeletePublic(ctx context.Context, key string) error
 }

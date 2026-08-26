@@ -7,24 +7,22 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/quanttide/qtcloud-crowd-provider/internal/publish"
 	"github.com/quanttide/qtcloud-crowd-provider/internal/store"
 )
 
 // Handler 暴露任务 REST API：
 //
-//	GET    /api/tasks               任务列表
-//	PUT    /api/tasks               保存单个任务（id 相同则覆盖；status=published 触发发布）
+//	GET    /api/tasks               任务列表（?status=published 供前台拉取上架）
+//	PUT    /api/tasks               保存单个任务（id 相同则覆盖；status 走状态机）
 //	POST   /api/tasks/{id}/claim    写回 API：认领（published→accepted，body: partner_id）
 //	POST   /api/tasks/{id}/deliver  写回 API：交付（accepted→reviewing）
 type Handler struct {
 	repo *Repository
-	pub  *publish.Publisher
 }
 
 // NewHandler 创建任务 HTTP handler。
-func NewHandler(repo *Repository, pub *publish.Publisher) http.Handler {
-	return &Handler{repo: repo, pub: pub}
+func NewHandler(repo *Repository) http.Handler {
+	return &Handler{repo: repo}
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -89,21 +87,7 @@ func (h *Handler) upsert(w http.ResponseWriter, r *http.Request) {
 	}
 	// 验收准则兜底：说不清验收不能发布（进入 reviewing 或 published 都不行）。
 	if (t.Status == StatusReviewing || t.Status == StatusPublished) && !t.CanPublish() {
-		http.Error(w, "acceptance criteria required before publish", http.StatusBadRequest)
-		return
-	}
-
-	// 判定当前是否处于 published（发布状态变化需要同步公开层）。
-	prev, err := h.repo.Get(r.Context(), t.ID)
-	prevPublished := false
-	switch {
-	case err == nil:
-		prevPublished = prev.Status == StatusPublished
-	case errors.Is(err, store.ErrNotFound):
-		// 新任务
-	default:
-		log.Printf("task get: %v", err)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		http.Error(w, "acceptance criteria required", http.StatusBadRequest)
 		return
 	}
 
@@ -111,22 +95,6 @@ func (h *Handler) upsert(w http.ResponseWriter, r *http.Request) {
 		log.Printf("task upsert: %v", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
-	}
-
-	// 同步公开数据层：审核通过=发布（写黄页快照）；离开 published=撤回（关闭/打回）。
-	switch {
-	case t.Status == StatusPublished:
-		if err := h.pub.Publish(r.Context(), snapshotOf(t)); err != nil {
-			log.Printf("task publish: %v", err)
-			http.Error(w, "internal error", http.StatusInternalServerError)
-			return
-		}
-	case prevPublished && t.Status != StatusPublished:
-		if err := h.pub.Remove(r.Context(), t.ID); err != nil {
-			log.Printf("task unpublish: %v", err)
-			http.Error(w, "internal error", http.StatusInternalServerError)
-			return
-		}
 	}
 	writeJSON(w, http.StatusOK, t)
 }
@@ -149,7 +117,7 @@ func (h *Handler) writeBack(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// claim 认领：published→accepted，body 带 partner_id；认领后撤回公开对象。
+// claim 认领：published→accepted，body 带 partner_id。
 func (h *Handler) claim(w http.ResponseWriter, r *http.Request, id string) {
 	t, ok := h.getForWriteBack(w, r, id)
 	if !ok {
@@ -178,16 +146,10 @@ func (h *Handler) claim(w http.ResponseWriter, r *http.Request, id string) {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
-	// 认领后公开桶不再展示该任务（"当前可接任务"语义）。
-	if err := h.pub.Remove(r.Context(), id); err != nil {
-		log.Printf("task claim unpublish: %v", err)
-		http.Error(w, "internal error", http.StatusInternalServerError)
-		return
-	}
 	writeJSON(w, http.StatusOK, t)
 }
 
-// deliver 交付：accepted→reviewing（待验收），不改变公开层（对象已撤回）。
+// deliver 交付：accepted→reviewing（待验收）。
 func (h *Handler) deliver(w http.ResponseWriter, r *http.Request, id string) {
 	t, ok := h.getForWriteBack(w, r, id)
 	if !ok {
@@ -220,17 +182,6 @@ func (h *Handler) getForWriteBack(w http.ResponseWriter, r *http.Request, id str
 		return Task{}, false
 	}
 	return t, true
-}
-
-// snapshotOf 把后台任务模型映射为公开黄页快照（description 取 content，内部数据不出桶）。
-func snapshotOf(t Task) publish.Snapshot {
-	return publish.Snapshot{
-		ID:          t.ID,
-		Title:       t.Title,
-		Description: t.Content,
-		Reward:      t.Reward,
-		ApplyGuide:  t.ApplyGuide,
-	}
 }
 
 // parseWriteBackPath 解析 POST /api/tasks/{id}/{action}，返回 id 与动作。
