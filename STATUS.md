@@ -4,12 +4,12 @@
 
 ## 发布状态
 
-| 组件 | 最新版本 | 发布日期 | Git Tag | 待发布内容 |
-|------|---------|---------|---------|-----------|
-| provider | v0.1.0-alpha.1 | 2026-08-26 | ✅ `provider/v0.1.0-alpha.1` | 有（见下方） |
-| site | v0.1.0-alpha.1 | 2026-08-25 | ✅ `site/v0.1.0-alpha.1` | 无 |
-| studio | v0.1.0-alpha.1 | 2026-08-25 | ❌ 未打 tag | 无 |
-| cli | v0.1.0-alpha.1 | 2026-08-25 | ❌ 未打 tag | 无 |
+| 组件 | 最新版本 | 发布日期 | Git Tag | 部署状态 |
+|------|---------|---------|---------|----------|
+| provider | v0.1.0-alpha.1 | 2026-08-26 | ✅ `provider/v0.1.0-alpha.1` | ⚠️ 仅 FC 直连，未接入 API 网关 |
+| site | v0.1.0-alpha.1 | 2026-08-25 | ✅ `site/v0.1.0-alpha.1` | ✅ 正常 |
+| studio | v0.1.0-alpha.1 | 2026-08-25 | ❌ 未打 tag | - |
+| cli | v0.1.0-alpha.1 | 2026-08-25 | ❌ 未打 tag | - |
 
 ## provider 待发布内容（Unreleased）
 
@@ -20,6 +20,7 @@
 
 ## 待办
 
+- [ ] provider 接入 API 网关
 - [ ] studio 打 tag 并发布
 - [ ] cli 打 tag 并发布
 - [ ] provider 发布 Unreleased 内容
