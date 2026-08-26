@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [0.1.0-alpha.2] - 2026-08-26
+
+### Changed
+
+- GET /api/tasks 支持 status 过滤（?status=published——上架查询）
+- 移除冗余 publish 代码（后台不再投递公开桶——前台经 qtcrowd-provider 数据 API 读）
+
+
 ### 移除
 
 - 删除发布投递层 `internal/publish/`（审核通过不再写前台公开桶）——新架构下前台只从
