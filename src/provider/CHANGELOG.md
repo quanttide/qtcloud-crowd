@@ -1,6 +1,11 @@
 # Changelog
 
-## [Unreleased]
+## [0.1.0-alpha.2] - 2026-08-26
+
+### 修复
+
+- 使用阿里云官方 OSS SDK 替代手动签名，修复 403 SignatureDoesNotMatch 错误
+- 修复 OSS URL 缺少 https:// 前缀的问题
 
 ### 新增
 
