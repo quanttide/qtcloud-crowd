@@ -37,13 +37,17 @@ func main() {
 // newStore 按 QTCLOUD_CROWD_STORE 选择存储后端。
 func newStore(storeType string) store.Store {
 	if storeType == "oss" {
-		return store.NewOSS(store.OSSConfig{
+		ossStore, err := store.NewOSS(store.OSSConfig{
 			Endpoint:        getenv("QTCLOUD_OSS_ENDPOINT", ""),
 			Bucket:          getenv("QTCLOUD_OSS_BUCKET", ""),
 			PublicBucket:    getenv("QTCLOUD_OSS_PUBLIC_BUCKET", ""),
 			AccessKeyID:     getenv("QTCLOUD_OSS_ACCESS_KEY_ID", ""),
 			AccessKeySecret: getenv("QTCLOUD_OSS_ACCESS_KEY_SECRET", ""),
 		})
+		if err != nil {
+			log.Fatalf("failed to create OSS store: %v", err)
+		}
+		return ossStore
 	}
 	return store.NewLocal()
 }
