@@ -1,9 +1,5 @@
 # Changelog
 
-> 本文件为 `provider` scope（Go 服务端——FC 3.0 部署）的版本记录。发布使用
-> `qtcloud-devops release --version provider/vX.Y.Z --changelog src/provider/CHANGELOG.md`，
-> 推送 `provider/*` tag 会触发部署（Docker 镜像 → ACR → Terraform apply → FC）。
-
 ## [Unreleased]
 
 ### 新增

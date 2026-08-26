@@ -1,9 +1,5 @@
 # Changelog
 
-> 本文件为 `site` scope（React+Vite 介绍页）的版本记录。发布使用
-> `qtcloud-devops release --version site/vX.Y.Z --changelog src/site/CHANGELOG.md`，
-> 推送 `site/*` tag 会触发部署（构建 → 上传 OSS → 刷新 CDN）。
-
 ## [0.1.0-alpha.1] - 2026-08-25
 
 ### Added
