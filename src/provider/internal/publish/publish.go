@@ -1,8 +1,9 @@
-// Package publish 实现 OSS 共享数据层的"发布"：
-// 审核通过的任务写公开桶（黄页快照——当前可接任务），认领/关闭时撤回。
+// Package publish 实现“投递”语义的发布：审核通过的任务写前台 qtcrowd-site 桶
+// （黄页快照——当前可接任务），认领/关闭时撤回。
 //
-// 依赖方向：后台（qtcloud-crowd provider）只依赖 OSS——发布是"推"的动作（带审计）；
-// 前台（qtcrowd site/studio）直接读公开桶（CDN 静态分发），不经过本包。
+// 依赖方向：后台（qtcloud-crowd provider）不建公开桶——只做投递者角色，把黄页快照
+// 写入前台自有桶（qtcrowd-site，qtcrowd 仓库 IaC 管理、前台已有，不新建）；
+// 前台（qtcrowd site/studio）直接读自己的桶（CDN 静态分发），不经过本包。
 package publish
 
 import (
@@ -12,10 +13,10 @@ import (
 	"github.com/quanttide/qtcloud-crowd-provider/internal/store"
 )
 
-// Prefix 是公开桶内黄页快照对象的路径前缀约定：public/tasks/{id}.json。
+// Prefix 是前台桶内黄页快照对象的路径前缀约定：public/tasks/{id}.json。
 const Prefix = "public/tasks/"
 
-// Snapshot 是公开桶中的黄页快照：黄页模型视图（title/reward/报名引导）。
+// Snapshot 是前台桶中的黄页快照：黄页模型视图（title/reward/报名引导）。
 // 内部数据（验收准则等）留后台桶——模型不同构由桶边界天然解决。
 type Snapshot struct {
 	ID          string `json:"id"`
@@ -26,12 +27,12 @@ type Snapshot struct {
 	Status      string `json:"status"`
 }
 
-// Key 返回任务 id 对应的公开对象 key（public/tasks/{id}.json）。
+// Key 返回任务 id 对应的前台桶对象 key（public/tasks/{id}.json）。
 func Key(id string) string {
 	return Prefix + id + ".json"
 }
 
-// Publisher 负责向公开数据层发布/撤回任务黄页快照。
+// Publisher 负责向前台 qtcrowd-site 桶发布/撤回任务黄页快照（投递者角色，不建公开桶）。
 type Publisher struct {
 	st store.Store
 }

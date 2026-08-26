@@ -14,7 +14,7 @@ import (
 type OSSConfig struct {
 	Endpoint        string // 如 oss-cn-hangzhou.aliyuncs.com（不带 https://）
 	Bucket          string // 后台桶（私有：审核/认证/结算完整数据）
-	PublicBucket    string // 公开桶（公共读 + CDN：黄页快照/任务池）
+	PublicBucket    string // 前台桶（qtcrowd-site——投递目标，前台自有：公共读 + CDN：黄页快照/任务池）
 	AccessKeyID     string
 	AccessKeySecret string
 }
@@ -78,7 +78,7 @@ func (s *OSS) Put(ctx context.Context, key string, data []byte) error {
 	return s.bucket.PutObject(key, bytes.NewReader(data))
 }
 
-// PutPublic 写公开桶对象（黄页快照，覆盖语义）。
+// PutPublic 写前台桶对象（黄页快照，覆盖语义——投递者角色）。
 func (s *OSS) PutPublic(ctx context.Context, key string, data []byte) error {
 	if s.publicBucket == nil {
 		return errors.New("oss put public: public bucket not configured")
@@ -86,7 +86,7 @@ func (s *OSS) PutPublic(ctx context.Context, key string, data []byte) error {
 	return s.publicBucket.PutObject(key, bytes.NewReader(data))
 }
 
-// DeletePublic 删除公开桶对象；404 视为已删除（幂等——认领/关闭时对象可能已不存在）。
+// DeletePublic 删除前台桶对象；404 视为已删除（幂等——认领/关闭时对象可能已不存在）。
 func (s *OSS) DeletePublic(ctx context.Context, key string) error {
 	if s.publicBucket == nil {
 		return errors.New("oss delete public: public bucket not configured")

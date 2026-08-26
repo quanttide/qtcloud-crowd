@@ -45,12 +45,6 @@ variable "oss_data_bucket" {
   default     = "qtcloud-crowd-provider"
 }
 
-variable "oss_public_bucket" {
-  description = "provider 运行时公开数据 OSS 桶（公共读+静态托管，QTCLOUD_OSS_PUBLIC_BUCKET；发布任务黄页快照 public/tasks/）"
-  type        = string
-  default     = "qtcloud-crowd-public"
-}
-
 variable "oss_endpoint" {
   description = "阿里云 OSS Endpoint（provider 运行时 QTCLOUD_OSS_ENDPOINT，region 内网/公网地址）"
   type        = string

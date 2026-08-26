@@ -6,7 +6,7 @@
 resource "alicloud_oss_bucket" "site" {
   bucket = var.site_bucket_name
 
-  # 同公开桶：关闭 BlockPublicAccess 后设为 public-read，开启静态网站托管
+  # 静态站点：关闭 BlockPublicAccess 后设为 public-read，开启静态网站托管
   acl = "public-read"
 
   website {

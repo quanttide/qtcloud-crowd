@@ -6,7 +6,8 @@
 //   - QTCLOUD_CROWD_STORE  存储后端，默认 local；设为 oss 走阿里云 OSS
 //   - QTCLOUD_OSS_ENDPOINT / QTCLOUD_OSS_BUCKET /
 //     QTCLOUD_OSS_PUBLIC_BUCKET / QTCLOUD_OSS_ACCESS_KEY_ID /
-//     QTCLOUD_OSS_ACCESS_KEY_SECRET  OSS 配置（PUBLIC_BUCKET=公开桶：黄页快照）
+//     QTCLOUD_OSS_ACCESS_KEY_SECRET  OSS 配置（PUBLIC_BUCKET=前台 qtcrowd-site 桶：
+//     黄页快照投递目标——后台不建公开桶，只投递）
 package main
 
 import (

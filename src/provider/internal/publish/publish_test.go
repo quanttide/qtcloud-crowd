@@ -33,7 +33,7 @@ func TestPublisherPublishAndRemove(t *testing.T) {
 		t.Fatalf("Publish: %v", err)
 	}
 
-	// 发布写公开层：local 模式生成 public/tasks/t1.json（黄页快照字段 + status published）。
+	// 发布投递前台层：local 模式生成 public/tasks/t1.json（黄页快照字段 + status published）。
 	data, err := st.Get(ctx, filepath.Join(dir, "public", "tasks", "t1.json"))
 	if err != nil {
 		t.Fatalf("公开对象未生成: %v", err)

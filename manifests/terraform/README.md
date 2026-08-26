@@ -14,13 +14,13 @@
 - **FC 函数** `qtcloud-crowd-prod`：custom-container，承载 `src/provider`（任务/执行方/结算 REST API）
 - **后台数据 OSS 桶** `qtcloud-crowd-provider`（私有）：完整数据 `data/crowd.json`
   （`QTCLOUD_CROWD_STORE=oss`；见 `fc.tf` 的 `environment_variables`）
-- **公开黄页 OSS 桶** `qtcloud-crowd-public`（公共读 + 静态托管）：发布任务黄页快照
-  `public/tasks/{id}.json`（审核通过 = 发布，认领/关闭 = 撤回；见 `internal/publish`）
+- **前台桶投递** `qtcrowd-site`（前台已有桶，qtcrowd 仓库 IaC 管理，不新建）：发布任务
+  黄页快照 `public/tasks/{id}.json`（审核通过 = 发布，认领/关闭 = 撤回；见 `internal/publish`；
+  `QTCLOUD_OSS_PUBLIC_BUCKET` 指向该桶——后台只做投递者角色，不建公开桶）
 - **HTTP 触发器**：`https://<fc-fn>.<region>.fcapp.run`（直连入口，后续可上系统级 API 网关）
 
-> 双桶分离是 crowd 与 execute 的差异点：公开桶单独建（公共读 + 静态托管），
-> 与私有数据桶分开。qtcrowd site/studio 直接读公开桶（CDN 静态分发）或经
-> `QTCLOUD_CROWD_PUBLIC_URL` 配置公开数据源根 URL。
+> 与 qtcloud-execute 的差异点：crowd provider 写两个桶——后台私有桶 + 前台 qtcrowd-site 桶
+> （投递黄页快照，桶由前台管理）。qtcrowd site/studio 直接读前台自己的桶（CDN 静态分发）。
 
 ## 远程状态（OSS backend）
 
@@ -79,5 +79,6 @@ terraform apply
 
 ## 说明
 
-- site 桶 / 公开桶 ACL 为 `public-read`（CDN 回源 / 公共读需要）；provider 后台数据桶为私有
+- site 桶 ACL 为 `public-read`（CDN 回源需要）；provider 后台数据桶为私有；
+  前台桶 `qtcrowd-site` 由 qtcrowd 仓库管理（后台只投递、不建桶）
 - 命名与 `.github/workflows/deploy-site.yml`、`.github/workflows/deploy-provider.yml` 保持一致
