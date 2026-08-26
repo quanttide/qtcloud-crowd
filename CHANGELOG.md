@@ -5,6 +5,6 @@
 > - `src/site/CHANGELOG.md`（site scope）
 > - `src/studio/CHANGELOG.md`（studio scope）
 
-## [provider/v0.1.0-alpha.1] - 2026-08-26
+## [site/v0.1.0-alpha.1] - 2026-08-26
 
 - 初始版本：任务/执行方/结算 REST API + OSS 共享数据层（published 发布/认领写回）
