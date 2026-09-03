@@ -41,6 +41,7 @@ echo "group: $GROUP_ID"
 APIS=(
   # tasks
   "qtcloud-crowd-tasks|GET|/qtcloud-crowd/api/tasks|/api/tasks"
+  "qtcloud-crowd-tasks-put|PUT|/qtcloud-crowd/api/tasks|/api/tasks"
   "qtcloud-crowd-tasks-post|POST|/qtcloud-crowd/api/tasks|/api/tasks"
   "qtcloud-crowd-task-detail|GET|/qtcloud-crowd/api/tasks/{id}|/api/tasks/{id}"
   "qtcloud-crowd-task-detail-put|PUT|/qtcloud-crowd/api/tasks/{id}|/api/tasks/{id}"
