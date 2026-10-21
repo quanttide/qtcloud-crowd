@@ -18,4 +18,4 @@
 | studio | v0.1.0-alpha.1 | 2026-08-25 | ❌ 未打 tag | - |
 | cli | v0.1.0-alpha.1 | 2026-08-25 | ❌ 未打 tag | - |
 
-详见 [ROADMAP.md](ROADMAP.md)。
+详见 [ROADMAP.md](docs/dev-guide/roadmap.md)。
